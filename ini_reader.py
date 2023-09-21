@@ -53,11 +53,17 @@ class ini_reader:
         # Check Steam was specified
         games["Steam"] = config["Steam"]["steam_exe"]
         
-        # Check [Retroarch Cores] and [ROMs paths] sections
+        
+        # Check game paths in config.ini
+
+        ### [Retroarch Cores] and [ROMs paths] sections
         emulator_dictionary = self.get_emulators_data(config)
         
-        # Check [Standalone games] section
+        ### Check [Standalone games] section
         standalone_dictionary = self.get_standalone_data(config)
+
+        ### Check [Steam games] section
+        steam_games_dictionary = self.get_steam_games_data(config)
         
 
         # Validate there are enough games for a random selection
@@ -65,20 +71,26 @@ class ini_reader:
         
         possible_standalones = len(standalone_dictionary.values())
 
+        possible_steam_games = len(steam_games_dictionary.values())
 
-        if (possible_roms + possible_standalones > 2):
+        possible_games = possible_roms + possible_standalones + possible_steam_games
+
+        if (possible_games > 2):
             if (possible_roms > 0):
                 games["emulators"] = emulator_dictionary
             
             if (possible_standalones > 0):
                 games["standalones"] = standalone_dictionary
             
-            print(f"We found {possible_roms + possible_standalones} possible games to play.")
+            if (possible_steam_games > 0):
+                games["steam_games"] = steam_games_dictionary
+            
+            print(f"We found {possible_games} possible games to play.")
 
             return games
         
         else:
-            print(f"We found {possible_roms + possible_standalones} possible game(s), not enough to use this program.")
+            print(f"We found {possible_games} possible game(s), not enough to use this program.")
                         
         return config
 
@@ -127,6 +139,17 @@ class ini_reader:
             standalone_dictionary[standalone_name] = standalone_path
         
         return standalone_dictionary
+
+
+    """
+    @description: Formats Steam games data into a Dictionary, based on the contents of "config.ini".
+    """
+    def get_steam_games_data(self, config):
+        steam_games_dictionary = {}
+        for steam_game_name, steam_game_id in config.items("Steam games"):
+            steam_games_dictionary[steam_game_name] = steam_game_id
+        
+        return steam_games_dictionary
 
 
     """
